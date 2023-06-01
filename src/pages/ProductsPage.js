@@ -1,6 +1,6 @@
-import {Helmet} from 'react-helmet-async';
-import {filter} from 'lodash';
-import {useEffect, useState} from 'react';
+import { Helmet } from 'react-helmet-async';
+import { filter } from 'lodash';
+import { useEffect, useState } from 'react';
 // @mui
 import {
   Card,
@@ -19,7 +19,17 @@ import {
   Typography,
   IconButton,
   TableContainer,
-  TablePagination, AppBar, Dialog, Toolbar, ListItem, ListItemText, Divider, List, TextField, Box,
+  TablePagination,
+  AppBar,
+  Dialog,
+  Toolbar,
+  ListItem,
+  ListItemText,
+  Divider,
+  List,
+  TextField,
+  Box,
+  Grid,
 } from '@mui/material';
 // import CloseIcon from '@mui/icons-material/Close';
 // components
@@ -28,23 +38,23 @@ import Label from '../components/label';
 import Iconify from '../components/iconify';
 import Scrollbar from '../components/scrollbar';
 // sections
-import {UserListHead, UserListToolbar} from '../sections/@dashboard/user';
+import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
 // mock
 import USERLIST from '../_mock/user';
 
 // api
-import api from "../api";
+import api from '../api';
 
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  {id: 'name', label: 'Tên sản phẩm', alignRight: false},
-  {id: 'sku', label: 'Mã sản phẩm', alignRight: false},
-  {id: 'category', label: 'Danh mục', alignRight: false},
-  {id: 'price', label: 'Giá', alignRight: false},
-  {id: 'quantity', label: 'Tồn kho', alignRight: false},
-  {id: 'status', label: 'Trạng thái', alignRight: false},
-  {id: ''},
+  { id: 'name', label: 'Tên sản phẩm', alignRight: false },
+  { id: 'sku', label: 'Mã sản phẩm', alignRight: false },
+  { id: 'category', label: 'Danh mục', alignRight: false },
+  { id: 'price', label: 'Giá', alignRight: false },
+  { id: 'quantity', label: 'Tồn kho', alignRight: false },
+  { id: 'status', label: 'Trạng thái', alignRight: false },
+  { id: '' },
 ];
 
 // ----------------------------------------------------------------------
@@ -96,39 +106,48 @@ export default function UserPage() {
 
   const [products, setProducts] = useState([]);
 
-  const [product, setProduct] = useState({});
+  const [product, setProduct] = useState({
+    name: '',
+    sku: '',
+    price: 0,
+    category_id: 0,
+    quantity: 0,
+    description: '',
+    avatar: null,
+  });
+
+  const [imgSrc, setImgSrc] = useState('');
 
   const [selectedProduct, setSelectedProduct] = useState({});
 
-  const [openModalProduct, setOpenModalProduct] = useState(false)
+  const [openModalProduct, setOpenModalProduct] = useState(false);
 
   const getProducts = () => {
-    api.getProducts().then(response => {
+    api.getProducts().then((response) => {
       if (response) {
         setProducts(response.data?.data.data);
       }
-    })
-  }
+    });
+  };
 
-  const saveProduct = (data) => {
-    console.log('abc')
-    console.log(data)
+  const saveProduct = () => {
+    console.log('product: ', product);
     setOpenModalProduct(false);
-  }
+  };
 
   useEffect(() => {
     getProducts();
-  }, [])
+  }, []);
 
   const handleOpenMenu = (event, data) => {
     setOpen(event.currentTarget);
-    setProduct(data)
+    setProduct(data);
   };
 
   const handleGetProduct = () => {
-    console.log(product)
-    setOpenModalProduct(true)
-  }
+    console.log(product);
+    setOpenModalProduct(true);
+  };
 
   const handleCloseMenu = () => {
     setOpen(null);
@@ -178,6 +197,20 @@ export default function UserPage() {
     setFilterName(event.target.value);
   };
 
+  const handleChangeProductInfo = (value, key) => {
+    if (key === 'name') setProduct({ ...product, name: value });
+    if (key === 'sku') setProduct({ ...product, sku: value });
+    if (key === 'category_id') setProduct({ ...product, category_id: value });
+    if (key === 'price') setProduct({ ...product, price: value });
+    if (key === 'quantity') setProduct({ ...product, quantity: value });
+    if (key === 'description') setProduct({ ...product, description: value });
+  };
+
+  const handleUpload = (event) => {
+    const fileTarget = event?.target?.files[0];
+    if (fileTarget) setImgSrc(URL.createObjectURL(fileTarget));
+  };
+
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - USERLIST.length) : 0;
 
   const filteredUsers = applySortFilter(products, getComparator(order, orderBy), filterName);
@@ -195,13 +228,17 @@ export default function UserPage() {
           <Typography variant="h4" gutterBottom>
             Sản phẩm
           </Typography>
-          <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill"/>} onClick={() => setOpenModalProduct(true)}>
+          <Button
+            variant="contained"
+            startIcon={<Iconify icon="eva:plus-fill" />}
+            onClick={() => setOpenModalProduct(true)}
+          >
             Thêm mới
           </Button>
         </Stack>
 
         <Card>
-          <UserListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName}/>
+          <UserListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
 
           <Scrollbar>
             <TableContainer>
@@ -217,18 +254,18 @@ export default function UserPage() {
                 />
                 <TableBody>
                   {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const {id, sku, name, categoryId = row.category_id, status, price, avatar, quantity} = row;
+                    const { id, sku, name, categoryId = row.category_id, status, price, avatar, quantity } = row;
                     const selectedUser = selected.indexOf(name) !== -1;
 
                     return (
                       <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
                         <TableCell padding="checkbox">
-                          <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, name)}/>
+                          <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, name)} />
                         </TableCell>
 
                         <TableCell component="th" scope="row" padding="none">
                           <Stack direction="row" alignItems="center" spacing={2}>
-                            <Avatar alt={name} src={avatar}/>
+                            <Avatar alt={name} src={avatar} />
                             <Typography variant="subtitle2" noWrap>
                               {name}
                             </Typography>
@@ -249,15 +286,15 @@ export default function UserPage() {
 
                         <TableCell align="right">
                           <IconButton size="large" color="inherit" onClick={(event) => handleOpenMenu(event, row)}>
-                            <Iconify icon={'eva:more-vertical-fill'}/>
+                            <Iconify icon={'eva:more-vertical-fill'} />
                           </IconButton>
                         </TableCell>
                       </TableRow>
                     );
                   })}
                   {emptyRows > 0 && (
-                    <TableRow style={{height: 53 * emptyRows}}>
-                      <TableCell colSpan={6}/>
+                    <TableRow style={{ height: 53 * emptyRows }}>
+                      <TableCell colSpan={6} />
                     </TableRow>
                   )}
                 </TableBody>
@@ -265,7 +302,7 @@ export default function UserPage() {
                 {isNotFound && (
                   <TableBody>
                     <TableRow>
-                      <TableCell align="center" colSpan={6} sx={{py: 3}}>
+                      <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
                         <Paper
                           sx={{
                             textAlign: 'center',
@@ -278,7 +315,7 @@ export default function UserPage() {
                           <Typography variant="body2">
                             No results found for &nbsp;
                             <strong>&quot;{filterName}&quot;</strong>.
-                            <br/> Try checking for typos or using complete words.
+                            <br /> Try checking for typos or using complete words.
                           </Typography>
                         </Paper>
                       </TableCell>
@@ -305,8 +342,8 @@ export default function UserPage() {
         open={Boolean(open)}
         anchorEl={open}
         onClose={handleCloseMenu}
-        anchorOrigin={{vertical: 'top', horizontal: 'left'}}
-        transformOrigin={{vertical: 'top', horizontal: 'right'}}
+        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         PaperProps={{
           sx: {
             p: 1,
@@ -320,199 +357,137 @@ export default function UserPage() {
         }}
       >
         <MenuItem onClick={() => handleGetProduct()}>
-          <Iconify icon={'eva:edit-fill'} sx={{mr: 2}} />
+          <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
           Chỉnh sửa
         </MenuItem>
 
-        <MenuItem sx={{color: 'error.main'}}>
-          <Iconify icon={'eva:trash-2-outline'} sx={{mr: 2}}/>
+        <MenuItem sx={{ color: 'error.main' }}>
+          <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
           Delete
         </MenuItem>
       </Popover>
 
-      <Dialog
-        fullScreen
-        open={openModalProduct}
-        onClose={() => setOpenModalProduct(false)}
-      >
+      <Dialog fullScreen open={openModalProduct} onClose={() => setOpenModalProduct(false)}>
         <AppBar sx={{ position: 'relative' }}>
           <Toolbar>
-            <IconButton
-              edge="start"
-              color="inherit"
-              onClick={() => setOpenModalProduct(false)}
-              aria-label="close"
-            >
+            <IconButton edge="start" color="inherit" onClick={() => setOpenModalProduct(false)} aria-label="close">
               {/* <CloseIcon /> */}
             </IconButton>
             <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
               Tạo mới sản phẩm
             </Typography>
-            <Button autoFocus color="inherit" onClick={() => handleSubmit(saveProduct)}>
+            <Button autoFocus color="inherit" onClick={saveProduct}>
               Lưu
             </Button>
           </Toolbar>
         </AppBar>
-        <Box padding="20px">
-          <Controller
-            name="name"
-            control={control}
-            defaultValue={product?.name || ''}
-            rules={{
-              validate: {
-                required: (value) => (value.length ? true : "Không được bỏ trống"),
-              },
-            }}
-            render={({ onChange, value }) => {
-              return (
-                <TextField
-                  label={'Tên sản phẩm'}
-                  size={'small'}
-                  fullWidth
-                  variant="outlined"
-                  onChange={onChange}
-                  value={value || ''}
-                  error={!!errors?.name}
-                  helperText={errors?.name?.message}
+        <Grid container spacing={2}>
+          <Grid item xs={4}>
+            <Box width="400px" height="400px" margin="20px" border={'1px solid gray'} position={'relative'}>
+              {imgSrc ? (
+                <img
+                  src={imgSrc}
+                  alt=""
+                  style={{
+                    objectFit: 'cover',
+                    width: '400px',
+                    height: '400px',
+                    textAlign: 'center',
+                    position: 'absolute',
+                    top: '50%',
+                    left: 0,
+                    right: 0,
+                    transform: 'translateY(-50%)',
+                  }}
                 />
-              );
-            }}
-          />
-        </Box>
-        <Box padding="20px">
-          <Controller
-            name="sku"
-            control={control}
-            defaultValue={product?.sku || ''}
-            rules={{
-              validate: {
-                required: (value) => (value.trim().length ? true : "Không được bỏ trống"),
-              },
-            }}
-            render={({ onChange, value }) => {
-              return (
-                <TextField
-                  label={'Mã sản phẩm'}
-                  size={'small'}
-                  fullWidth
-                  variant="outlined"
-                  onChange={onChange}
-                  value={value || ''}
-                  error={!!errors?.sku}
-                  helperText={errors?.sku?.message}
-                />
-              );
-            }}
-          />
-        </Box>
-        <Box padding="20px">
-          <Controller
-            name="category_id"
-            control={control}
-            defaultValue={product?.category_id || ''}
-            rules={{
-              validate: {
-                required: (value) => (value.trim().length ? true : "Không được bỏ trống"),
-              },
-            }}
-            render={({ onChange, value }) => {
-              return (
-                <TextField
-                  label={'Danh mục sản phẩm'}
-                  size={'small'}
-                  fullWidth
-                  variant="outlined"
-                  onChange={onChange}
-                  value={value || ''}
-                  error={!!errors?.category_id}
-                  helperText={errors?.category_id?.message}
-                />
-              );
-            }}
-          />
-        </Box>
-        <Box padding="20px">
-          <Controller
-            name="price"
-            control={control}
-            defaultValue={product?.price || ''}
-            rules={{
-              validate: {
-                required: (value) => (value.trim().length ? true : "Không được bỏ trống"),
-              },
-            }}
-            render={({ onChange, value }) => {
-              return (
-                <TextField
-                  label={'Giá'}
-                  type="number"
-                  size={'small'}
-                  fullWidth
-                  variant="outlined"
-                  onChange={onChange}
-                  value={value || ''}
-                  error={!!errors?.price}
-                  helperText={errors?.price?.message}
-                />
-              );
-            }}
-          />
-        </Box>
-        <Box padding="20px">
-          <Controller
-            name="quatity"
-            control={control}
-            defaultValue={product?.quantity || ''}
-            rules={{
-              validate: {
-                required: (value) => (value.trim().length ? true : "Không được bỏ trống"),
-              },
-            }}
-            render={({ onChange, value }) => {
-              return (
-                <TextField
-                  label={'Tồn kho'}
-                  type="number"
-                  size={'small'}
-                  fullWidth
-                  variant="outlined"
-                  onChange={onChange}
-                  value={value || ''}
-                  error={!!errors?.quantity}
-                  helperText={errors?.quantity?.message}
-                />
-              );
-            }}
-          />
-        </Box>
-        <Box padding="20px">
-          <Controller
-            name="description"
-            control={control}
-            defaultValue={product?.description || ''}
-            rules={{
-              validate: {
-                required: (value) => (value.trim().length ? true : "Không được bỏ trống"),
-              },
-            }}
-            render={({ onChange, value }) => {
-              return (
-                <TextField
-                  multiline
-                  rows={15}
-                  label={'Mô tả sản phẩm'}
-                  size={'small'}
-                  fullWidth
-                  variant="outlined"
-                  onChange={onChange}
-                  value={value || ''}
-                  error={!!errors?.description}
-                  helperText={errors?.description?.message}
-                />
-              );
-            }}
-          />
-        </Box>
+              ) : (
+                <div
+                  style={{
+                    textAlign: 'center',
+                    position: 'absolute',
+                    top: '50%',
+                    left: 0,
+                    right: 0,
+                    transform: 'translateY(-50%)',
+                  }}
+                >
+                  Thêm ảnh
+                </div>
+              )}
+              <input
+                style={{ width: '400px', height: '400px', opacity: 0, cursor: 'pointer' }}
+                type="file"
+                onChange={handleUpload}
+              />
+            </Box>
+          </Grid>
+          <Grid item xs={8}>
+            <Box padding="20px">
+              <TextField
+                label="Tên sản phẩm"
+                fullWidth
+                variant="outlined"
+                size={'small'}
+                value={product.name}
+                onChange={(event) => handleChangeProductInfo(event.target?.value, 'name')}
+              />
+            </Box>
+            <Box padding="20px">
+              <TextField
+                label="Mã sản phẩm"
+                fullWidth
+                variant="outlined"
+                size={'small'}
+                value={product.sku}
+                onChange={(event) => handleChangeProductInfo(event.target?.value, 'sku')}
+              />
+            </Box>
+            <Box padding="20px">
+              <TextField
+                label="Danh mục sản phẩm"
+                fullWidth
+                variant="outlined"
+                size={'small'}
+                value={product.category_id}
+                onChange={(event) => handleChangeProductInfo(event.target?.value, 'category_id')}
+              />
+            </Box>
+            <Box padding="20px">
+              <TextField
+                label="Giá"
+                fullWidth
+                type="number"
+                variant="outlined"
+                size={'small'}
+                value={product.price}
+                onChange={(event) => handleChangeProductInfo(event.target?.value, 'price')}
+              />
+            </Box>
+            <Box padding="20px">
+              <TextField
+                label="Tồn kho"
+                fullWidth
+                type="number"
+                variant="outlined"
+                size={'small'}
+                value={product.quantity}
+                onChange={(event) => handleChangeProductInfo(event.target?.value, 'quantity')}
+              />
+            </Box>
+            <Box padding="20px">
+              <TextField
+                multiline
+                rows="15"
+                label="Mô tả"
+                fullWidth
+                variant="outlined"
+                size={'small'}
+                value={product.description}
+                onChange={(event) => handleChangeProductInfo(event.target?.value, 'description')}
+              />
+            </Box>
+          </Grid>
+        </Grid>
       </Dialog>
     </>
   );
