@@ -10,26 +10,6 @@ export const apiAxios = axios.create({
 })
 
 export default {
-  login(data) {
-    return apiAxios({
-      method: 'post',
-      url: '/admins/auth/login',
-      data
-    })
-  },
-  getAuthUser() {
-    return apiAxios({
-      method: 'get',
-      url: 'admins/auth/me'
-    })
-  },
-  getEmployee(data) {
-    return apiAxios({
-      method: 'get',
-      url: 'admins/employees',
-      params: data
-    })
-  },
   getProducts() {
     return apiAxios({
       method: 'get',
@@ -42,17 +22,41 @@ export default {
       url: `products/${  id}`,
     })
   },
-  deleteEmployee(id) {
-    return apiAxios({
-      method: 'delete',
-      url: `admins/employees/${  id}`,
-    })
-  },
-  updateEmployee(data, id) {
+  createProduct(data = {}) {
     return apiAxios({
       method: 'post',
-      url: `admins/employees/${  id}`,
-      data
+      url: `products`,
+      data,
+      headers: {
+        post: {
+          'Content-Type': 'multipart/form-data'
+        }
+      }
+    })
+  },
+  deleteProduct(id) {
+    return apiAxios({
+      method: 'delete',
+      url: `products/${  id}`,
+    })
+  },
+  getAllCategories() {
+    return apiAxios({
+      method: 'get',
+      url: 'categories/all',
+    })
+  },
+  createCategory(data) {
+    return apiAxios({
+      method: 'post',
+      url: `categories`,
+      data,
+    })
+  },
+  deleteCategory(id) {
+    return apiAxios({
+      method: 'delete',
+      url: `categories/${  id}`,
     })
   },
 }
